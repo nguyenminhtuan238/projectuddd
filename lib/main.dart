@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'ui/screens.dart';
-
-void main() {
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+Future<void> main() async{
+  await dotenv.load();
   runApp(const MyApp());
 }
 
@@ -11,21 +12,38 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
+      
       providers: [
-        ChangeNotifierProvider(
-          create: (ctx)=>ProductsManager(),
-        ),
+       
         ChangeNotifierProvider(
           create:(ctx)=>CartManager(), 
         ),
         ChangeNotifierProvider(
           create:(ctx)=>OrdersManager(), 
         ),
+        ChangeNotifierProvider(
+          create:(ctx)=>AuthManager(), 
+        ),
+        ChangeNotifierProxyProvider<AuthManager,ProductsManager>(
+          create: (ctx)=>ProductsManager(),
+          update: (ctx,authmanager,productManager){
+            productManager!.authToken =authmanager.authToken;
+            return productManager;
+          },
+        ),
       ],
-      child: MaterialApp(
+      child:Consumer<AuthManager>(
+        builder: (ctx,authManager,child){
+          return  MaterialApp(
+    
       debugShowCheckedModeBanner: false,
-      
-      home: const  MyHomePage(),
+      home:authManager.isAuth? const  MyHomePage()
+      :FutureBuilder(
+        future: authManager.tryAutoLogin(),
+        builder: (ctx,snapshot){
+          return snapshot.connectionState == ConnectionState.waiting?const SplashScreen():const AuthScreen();
+        },
+      ),
       routes: {
         CartScreen.routeName: (ctx) => const CartScreen(),
         OrdersScreen.routeName:(ctx)=>const OrdersScreen(),
@@ -56,7 +74,9 @@ class MyApp extends StatelessWidget {
         }
         return null;
       },
-    ),
+    );
+        },
+      )
     );
   }
 }
@@ -79,6 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     
     return Scaffold(
+     
       body:_tab[_current],
       bottomNavigationBar: BottomNavigationBar(
           currentIndex: _current,

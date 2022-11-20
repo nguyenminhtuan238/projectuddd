@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shop/ui/products/products_manager.dart';
 import 'pd_detail_screen.dart';
 import '../../models/products.dart';
+import 'package:provider/provider.dart';
 class ListTitlePd extends StatelessWidget {
   const ListTitlePd(this.product,{super.key});
   final Product product;
@@ -24,7 +26,7 @@ class ListTitlePd extends StatelessWidget {
               return IconButton(
                 color: Theme.of(context).colorScheme.primary,
                 onPressed: () {
-                  product.isFavorite = !isFavorite;
+                  ctx.read<ProductsManager>().toggleFavoriteStatus(product);
                 },
                 icon: Icon(product.isFavorite
                     ? Icons.favorite

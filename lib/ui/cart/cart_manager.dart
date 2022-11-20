@@ -5,12 +5,12 @@ import '../../models/cart.dart';
 class CartManager with ChangeNotifier{
    Map<String, CartItem> _item = {
     'p1': CartItem(
-      id: 'p1',
-      title: 'Red Shirt',
+       id: 'p1',
+      title: 'Olong Milktea',
       quantity: 2,
-      price: 29.99,
+      price:2.5,
       imageUrl:
-          'https://cdn.pixabay.com/photo/2016/10/02/22/17/red-t-shirt-1710578_1280.jpg',
+		    'http://gongcha.com.vn/wp-content/uploads/2018/02/Tr%C3%A0-s%E1%BB%AFa-Oolong-2.png',
     ),
   };
   int get productCount{

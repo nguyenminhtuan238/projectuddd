@@ -1,19 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import '../../models/products.dart';
+import '../../models/auth_token.dart';
+import '../../services/products_service.dart';
 class  ProductsManager  with ChangeNotifier{
-  final List<Product> _items=[
-    Product(
-      id: 'p1',
-      title: 'Olong Milktea',
-      description: 'Đậm vị trà , ít béo',
-      price:2.5,
-      imageUrl:
-		    'http://gongcha.com.vn/wp-content/uploads/2018/02/Tr%C3%A0-s%E1%BB%AFa-Oolong-2.png',
-      isFavorite: true,
-    ),
+   List<Product> _items=[
+    
   ];
-  
+  final ProductsService _productsService;
+  ProductsManager([AuthToken? authToken]):_productsService=ProductsService(authToken);
+  set authToken(AuthToken? authToken){
+    _productsService.authToken=authToken;
+  }
+  Future<void> fetchProduct([bool filterByUser = false])async{
+    _items=await _productsService.fetchProducts(filterByUser);
+    notifyListeners();
+  }
   int get itemCount{
     return _items.length;
   }
@@ -26,35 +28,37 @@ class  ProductsManager  with ChangeNotifier{
   Product findID(String id){
     return _items.firstWhere((element) => element.id==id);
   }
-  void addProduct(Product product) {
-   
-       _items.add(
-         product.copyWith(
-           id: 'p${DateTime.now().toIso8601String()}',
-         )
-       );
+ Future<void> addProduct(Product product) async{
+    final newProduct=await _productsService.addProduct(product);
+    if(newProduct != null){
+       _items.add(newProduct);
     notifyListeners();
-    
+    }
   }
-  void updateProduct(Product product) {
+  Future<void> updateProduct(Product product) async{
     final index=_items.indexWhere((item) => item.id == product.id);
     if(index >= 0){
-      
+      if(await _productsService.updateProducts(product)){
          _items[index]=product;
         notifyListeners();
       } 
     }
-  
-  
-  void toggleFavoriteStatus(Product product) {
+  }
+  Future<void> toggleFavoriteStatus(Product product) async{
     final saveStatus=product.isFavorite;
     product.isFavorite=!saveStatus;
-    
+    if(!await _productsService.saveFavoriteStatus(product)){
+      product.isFavorite=saveStatus;
+    }
   }
-  void deleteProduct(String id) {
+  Future<void> deleteProduct(String id) async{
     final index=_items.indexWhere((item) => item.id==id);
+    Product? existingProduct=_items[index];
     _items.removeAt(index);
     notifyListeners();
-   
+    if(!await _productsService.deleteProduct(id)){
+      _items.insert(index, existingProduct);
+      notifyListeners();
+    }
   }
 }

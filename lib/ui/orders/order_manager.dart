@@ -6,19 +6,19 @@ class OrdersManager with ChangeNotifier{
   final List<OrderItem> _orders=[
     OrderItem(
       id: 'o1',
-      amount: 59.98,
+      amount: 5,
       products: [
-          CartItem(
-            id: 'c1',
-            title: 'Red Shirt',
-            price: 29.99,
-            quantity: 2,
-             imageUrl:
-            'https://cdn.pixabay.com/photo/2016/10/02/22/17/red-t-shirt-1710578_1280.jpg',
-          ),
-        ], 
-        dateTime: DateTime.now(),
-      )
+        CartItem(
+          id: 'p1',
+          title: 'Olong Milktea',
+          quantity: 2,
+          price: 2.5,
+          imageUrl:
+              'http://gongcha.com.vn/wp-content/uploads/2018/02/Tr%C3%A0-s%E1%BB%AFa-Oolong-2.png',
+        ),
+      ],
+      dateTime: DateTime.now(),
+    )
   ];
   int get orderCount{
     return _orders.length;

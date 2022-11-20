@@ -1,12 +1,27 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'user_product_list_tile.dart';
 import 'products_manager.dart';
 import 'edit_product_screen.dart';
-class UserProductsScreen extends StatelessWidget {
+import '../auth/auth_manager.dart';
+class  UserProductsScreen  extends StatefulWidget {
    static const routename='/manager';
   const UserProductsScreen({ super.key });
-  
+
+  @override
+  State<UserProductsScreen> createState() => _UserProductsScreen();
+}
+
+
+class _UserProductsScreen extends State<UserProductsScreen> {
+  late Future<void> _fetchProducts;
+  @override
+  void initState(){
+    super.initState();
+    _fetchProducts=context.read<ProductsManager>().fetchProduct();
+  }
   @override
   Widget build(BuildContext context) {
    
@@ -17,10 +32,27 @@ class UserProductsScreen extends StatelessWidget {
           buildAddButton(context),
         ],
       ),
-      body: RefreshIndicator(
+      body: FutureBuilder(
+        future: _fetchProducts,
+        builder: (context,snapshot){
+          if (snapshot.connectionState == ConnectionState.done) {
+            return RefreshIndicator(
             onRefresh: () async=>print('hello'),
             child: buildUserProductListView(), 
-          ),
+          );
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      
+      ),
+      floatingActionButton:FloatingActionButton(
+        onPressed: () { 
+              context.read<AuthManager>().logout(); 
+        },
+        child: const Icon(Icons.lock_open),
+      )
       );
     }
   }
