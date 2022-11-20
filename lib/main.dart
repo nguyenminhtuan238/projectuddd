@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shop/r.dart';
+import 'package:provider/provider.dart';
+import 'ui/screens.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,48 +8,105 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme=ThemeData();
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: theme.copyWith(
-        colorScheme: theme.colorScheme.copyWith(
-          primary: Colors.grey,
-          secondary: Colors.black,
-        )
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (ctx)=>ProductsManager(),
+        ),
+        ChangeNotifierProvider(
+          create:(ctx)=>CartManager(), 
+        ),
+        ChangeNotifierProvider(
+          create:(ctx)=>OrdersManager(), 
+        ),
+      ],
+      child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      
+      home: const  MyHomePage(),
+      routes: {
+        CartScreen.routeName: (ctx) => const CartScreen(),
+        OrdersScreen.routeName:(ctx)=>const OrdersScreen(),
+
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == PdDetailScreen.routeName) {
+          final productId = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (ctx) {
+              return PdDetailScreen(
+                ctx.read<ProductsManager>().findID(productId),
+              );
+            },
+          );
+        }
+        if (settings.name == EditProductScreen.routeName) {
+          final productId = settings.arguments as String?;
+          return MaterialPageRoute(
+            builder: (ctx) {
+              return EditProductScreen(
+                productId != null?
+                ctx.read<ProductsManager>().findID(productId)
+                : null,
+              );
+            },
+          );
+        }
+        return null;
+      },
+    ),
     );
   }
 }
-
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({Key? key,}) : super(key: key);
 
-  final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
- 
+  int _current=0;
+  final _tab=[
+    const ListViewpd(),
+   const OrdersScreen(),
+    const UserProductsScreen(),
+  ];
   @override
   Widget build(BuildContext context) {
     
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body:const MyHome(),
-      bottomNavigationBar: NavigationBar(
-        destinations:const [
-          NavigationDestination(icon: Icon(Icons.home),label: "Home"),
-          NavigationDestination(icon: Icon(Icons.person), label: "Profile",tooltip: "Profile5",)
-        ],
-      ),
+      body:_tab[_current],
+      bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _current,
+          type: BottomNavigationBarType.fixed,
+          fixedColor: Colors.blue,
+          items:const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+              backgroundColor: Colors.blue  
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.payment),
+              label: 'Order',
+              backgroundColor: Colors.blue,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.manage_accounts),
+              label: 'manager',
+              backgroundColor: Colors.blue  
+            )
+          ],
+          onTap: (index){
+            setState(() {
+              _current=index;
+            });
+          },
+        ),    
     );
   }
 }
